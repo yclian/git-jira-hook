@@ -29,8 +29,6 @@
 
 
 
-from __future__ import with_statement
-
 import logging
 import sys
 import os
@@ -43,7 +41,6 @@ myname = os.path.basename(sys.argv[0])
 # loglevel=logging.DEBUG
 
 
-import contextlib
 import subprocess
 import re
 import collections
@@ -158,7 +155,7 @@ def handle_post_commit():
     (jira_soap_client, jira_auth) = jira_start_session(jira_url)
 
     jira_add_comment(jira_soap_client, jira_auth, commit_id, commit_text)
-    return 
+    return 0
 
 
 # Performs the git "update" hook
@@ -270,7 +267,7 @@ def jira_add_comment(jira_soap_client, jira_auth, commit_id, commit_text):
                                 jira_soap_client, jira_auth, commit_text_with_url)
     call_pattern_hook(commit_text, 'fixes', jira_add_comment_to_and_fix_issue, \
                                 jira_soap_client, jira_auth, commit_text_with_url)
-    return
+    return 0
     
 
     
@@ -616,5 +613,5 @@ def git_get_array_of_commit_ids(start_id, end_id):
 #----------------------------------------------------------------------------
 # python script entry point. Dispatches main()
 if __name__ == "__main__":
-  exit (main())
+    os._exit (main ())
     
