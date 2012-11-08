@@ -61,21 +61,21 @@ def main():
     global myname, loglevel
     logging.basicConfig(level=loglevel, format=myname + ":%(levelname)s: %(message)s")
 
-    if myname == "commit-msg" :
+    if myname.startswith("commit-msg") :
         return handle_commit_msg()
 
-    elif myname == "post-commit" :
+    elif myname.startswith("post-commit") :
         return handle_post_commit()
 
-    elif myname == "update":
+    elif myname.startswith("update"):
         return handle_update()
 
-    elif myname == "post-receive":
+    elif myname.startswith("post-receive"):
         return handle_post_receive()
 
 
     else:
-        logging.error("invoked as '%s'. Need to be invoked as commit-msg, post-commit, update or post-receive" , myname)
+        logging.error("invoked as '%s'. Need to be invoked as commit-msg*, post-commit*, update* or post-receive*" , myname)
         return -1
  
 
