@@ -343,7 +343,11 @@ def jira_login(jira_url, soap_client):
 
     if auth == None:
         save_jira_cached_auth(jira_url, "")
-        auth = jira_explicit_login(soap_client)
+        username = get_jira_username()
+        if username != None or username != "":
+            auth = jira_git_login(soap_client) 
+        else:
+            auth = jira_explicit_login(soap_client)
 
 
     if auth != None:
@@ -366,6 +370,26 @@ def jira_implicit_login(soap_client, auth):
         
 
     return None
+
+def jira_git_login(soap_client):
+
+    username = get_jira_username()
+    password = get_jira_password()
+
+    try:
+        auth = soap_client.login(username, password)
+
+        try:
+            jira_types = soap_client.getIssueTypes(auth)
+            return auth
+
+        except Exception, e:
+            logging.error("User '%s' doesn't have access to Jira issues")
+            return None
+
+    except Exception, e:
+        logging.error("Login failed via environment variable")
+        return None
 
 def jira_explicit_login(soap_client):
     max_retry_count = 3
@@ -464,6 +488,12 @@ def get_jira_url():
         return None
 
     return jira_url
+
+def get_jira_username():
+    return git_config_get("jira.username")
+
+def get_jira_password():
+    return git_config_get("jira.password")
 
 def get_jira_cached_auth(jira_url):
     return get_cfg_value(os.environ['HOME'] + "/.jirarc", jira_url, "auth")
