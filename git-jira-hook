@@ -22,7 +22,7 @@
 
 # Purpose:
 # This is a git hook, to be used in an environment where git is used
-# as the source control and Jira is used for bug tracking.
+# as the source control and JIRA is used for bug tracking.
 # 
 # See accompanying README file for help in using this.
 # 
@@ -81,10 +81,10 @@ def main():
 
 # This function performs the git "commit-msg" hook
 # In this function, the commit message text is parsed for the magic
-# text referencing Jira issues. 
-# It logs into Jira and makes sure that the Jira issues exist
+# text referencing JIRA issues. 
+# It logs into JIRA and makes sure that the JIRA issues exist
 # and are accessible
-# This function does not actually add any comments to Jira
+# This function does not actually add any comments to JIRA
 # as the user's commit has not yet gone through (that
 # Returns: 0 on success, -1 on error
 def handle_commit_msg():
@@ -135,8 +135,8 @@ def handle_commit_msg():
 
 # Performs the git "post-commit" hook
 # Uses "git" to find out the most recent commit
-# Parses commit message text to find references to Jira issues
-# and updates the Jira issue by adding the commit message text
+# Parses commit message text to find references to JIRA issues
+# and updates the JIRA issue by adding the commit message text
     
 # to the issue
 # Returns: Nothing (as returning error wont do us any good
@@ -246,9 +246,9 @@ def validate_commit_text(jira_soap_client, jira_auth, commit_text, commit_id=Non
 
     if refed_issue_count + fixed_issue_count == 0:
         if commit_id != None:
-            logging.error("Failed to find any referenced Jira issue\n\tin commit message for commit %s", commit_id)
+            logging.error("Failed to find any referenced JIRA issue\n\tin commit message for commit %s", commit_id)
         else:
-            logging.error("Failed to find any referenced Jira issue in commit message(s)")
+            logging.error("Failed to find any referenced JIRA issue in commit message(s)")
         return -1
 
     return 0
@@ -269,7 +269,7 @@ def jira_add_comment(jira_soap_client, jira_auth, commit_id, commit_text):
     return 0
     
 # Given a function pointer, iterates through the commit message 
-# text for Jira magic words, and calls the function repeatedly
+# text for JIRA magic words, and calls the function repeatedly
 # returns number of issues found and touched
 # in case of error, return -1
 def call_pattern_hook(text, pattern, hookfn, jira_soap_client, jira_auth, jira_text):
@@ -292,11 +292,11 @@ def call_pattern_hook(text, pattern, hookfn, jira_soap_client, jira_auth, jira_t
     return issue_count
 
 #-----------------------------------------------------------------------------
-# Jira helper functions
+# JIRA helper functions
 #
 
 
-# Given a Jira server URL (which is stored in git config)
+# Given a JIRA server URL (which is stored in git config)
 # Starts an authenticated jira session using SOAP api
 # Returns a list of the SOAP object and the authentication token
 def jira_start_session(jira_url):
@@ -311,7 +311,7 @@ def jira_start_session(jira_url):
 
     except Exception, e:
         save_jira_cached_auth(jira_url, "")
-        logging.error("Invalid Jira URL: '%s'", jira_url)
+        logging.error("Invalid JIRA URL: '%s'", jira_url)
         logging.debug(e)
         return -1
 
@@ -322,7 +322,7 @@ def jira_start_session(jira_url):
     return (soap_client, auth)
 
 # Try to use the cached authentication object to log in
-# to Jira first. ("implicit")
+# to JIRA first. ("implicit")
 # if that fails, then prompt the user ("explicit")
 # for username/password
 def jira_login(jira_url, soap_client):
@@ -357,7 +357,7 @@ def jira_implicit_login(soap_client, auth):
         logging.info("... interrupted")
 
     except Exception, e:
-        print >> sys.stderr, "Previous Jira login is invalid or has expired"
+        print >> sys.stderr, "Previous JIRA login is invalid or has expired"
         # logging.debug(e)
         
 
@@ -376,7 +376,7 @@ def jira_git_login(soap_client):
             return auth
 
         except Exception, e:
-            logging.error("User '%s' doesn't have access to Jira issues")
+            logging.error("User '%s' doesn't have access to JIRA issues")
             return None
 
     except Exception, e:
@@ -389,9 +389,9 @@ def jira_explicit_login(soap_client):
 
     while retry_count < max_retry_count:
         if retry_count > 0:
-            logging.info("Invalid Jira password/username combination, try again")
+            logging.info("Invalid JIRA password/username combination, try again")
 
-        # We now need to read the Jira username/password from
+        # We now need to read the JIRA username/password from
         # the console.
         # However, there is a problem. When git hooks are invoked
         # stdin is pointed to /dev/null, see here:
@@ -400,8 +400,8 @@ def jira_explicit_login(soap_client):
         # http://mail.python.org/pipermail/patches/2002-February/007193.html
         sys.stdin = open('/dev/tty', 'r')
 
-        username = raw_input('Jira username: ')
-        password = getpass.getpass('Jira password: ')
+        username = raw_input('JIRA username: ')
+        password = getpass.getpass('JIRA password: ')
 
         # print "abc"
         # print "self.soap_client login...%s " % username + password
@@ -416,7 +416,7 @@ def jira_explicit_login(soap_client):
                 logging.info("... interrupted")
 
             except Exception,e:
-                logging.error("User '%s' does not have access to Jira issues")
+                logging.error("User '%s' does not have access to JIRA issues")
                 return None
 
         except KeyboardInterrupt:
@@ -430,7 +430,7 @@ def jira_explicit_login(soap_client):
 
 
     if auth == None:
-        logging.error("Invalid Jira password/username combination")
+        logging.error("Invalid JIRA password/username combination")
 
     return auth
 
@@ -439,7 +439,7 @@ def jira_explicit_login(soap_client):
 def jira_find_issue(issuekey, jira_soap_client, jira_auth, jira_text):
     try:
         issue = jira_soap_client.getIssue(jira_auth, issuekey)
-        logging.debug("Found issue '%s' in Jira: (%s)",  
+        logging.debug("Found issue '%s' in JIRA: (%s)",  
                     issuekey, issue["summary"])
         return 0
 
@@ -447,7 +447,7 @@ def jira_find_issue(issuekey, jira_soap_client, jira_auth, jira_text):
         logging.info("... interrupted")
 
     except Exception, e:
-        logging.error("No such issue '%s' in Jira", issuekey)
+        logging.error("No such issue '%s' in JIRA", issuekey)
         logging.debug(e)
         return -1
 
@@ -455,10 +455,10 @@ def jira_find_issue(issuekey, jira_soap_client, jira_auth, jira_text):
 def jira_add_comment_to_issue(issuekey, jira_soap_client, jira_auth, jira_text):
     try:
         jira_soap_client.addComment(jira_auth, issuekey, {"body":jira_text})
-        logging.debug("Added to issue '%s' in Jira:\n%s", issuekey, jira_text)
+        logging.debug("Added to issue '%s' in JIRA:\n%s", issuekey, jira_text)
 
     except Exception, e:
-        logging.error("Error adding comment to issue '%s' in Jira", issuekey)
+        logging.error("Error adding comment to issue '%s' in JIRA", issuekey)
         logging.debug(e)
         return -1
 
@@ -471,12 +471,12 @@ def jira_add_comment_to_and_fix_issue(issuekey, jira_soap_client, jira_text):
 
 
 #-----------------------------------------------------------------------------
-# Miscellaneous Jira related utility functions
+# Miscellaneous JIRA related utility functions
 #
 def get_jira_url():
     jira_url = git_config_get("jira.url")
     if jira_url == None or jira_url == "":
-        logging.error("Jira URL is not set. Please use 'git config jira.url <actual-jira-url> to set it'")
+        logging.error("JIRA URL is not set. Please use 'git config jira.url <actual-jira-url> to set it'")
         return None
 
     return jira_url
