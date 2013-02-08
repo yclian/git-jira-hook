@@ -231,13 +231,13 @@ def handle_post_receive():
 
 
 def validate_commit_text(jira_soap_client, jira_auth, commit_text, commit_id=None):
-    refed_issue_count = call_pattern_hook(commit_text, "refs", \
+    refed_issue_count = call_pattern_hook(commit_text, '(?:refs )?\[?#?(\w\w*-\d\d*)\]?', \
             jira_find_issue, jira_soap_client, jira_auth, None)
 
     if refed_issue_count == -1:
         return -1
 
-    fixed_issue_count = call_pattern_hook(commit_text, "fixes", \
+    fixed_issue_count = call_pattern_hook(commit_text, 'fixes #(\w\w*-\d\d*)', \
             jira_find_issue, jira_soap_client, jira_auth, None)
 
     if fixed_issue_count == -1:
@@ -262,19 +262,12 @@ def jira_add_comment(jira_soap_client, jira_auth, commit_id, commit_text):
     else:
         commit_text_with_url = commit_text
 
-
-    call_pattern_hook(commit_text, 'refs', jira_add_comment_to_issue, \
+    call_pattern_hook(commit_text, '(?:refs )?\[?#?(\w\w*-\d\d*)\]?', jira_add_comment_to_issue, \
                                 jira_soap_client, jira_auth, commit_text_with_url)
-    call_pattern_hook(commit_text, 'fixes', jira_add_comment_to_and_fix_issue, \
+    call_pattern_hook(commit_text, 'fixes #(\w\w*-\d\d*)', jira_add_comment_to_and_fix_issue, \
                                 jira_soap_client, jira_auth, commit_text_with_url)
     return 0
     
-
-    
-    
-
-
-
 # Given a function pointer, iterates through the commit message 
 # text for Jira magic words, and calls the function repeatedly
 # returns number of issues found and touched
@@ -284,13 +277,12 @@ def call_pattern_hook(text, pattern, hookfn, jira_soap_client, jira_auth, jira_t
         logging.error("Hook function is not callable");
         exit -1
 
-    magic = re.compile(pattern + ' #\w\w*-\d\d*')
-    
+    magic = re.compile(pattern)
+
     iterator = magic.finditer(text)
     issue_count = 0
-    for match in iterator: 
-        issuekey = match.group().split(" ", 2)[1].strip('#')
-        # print "issuekey found=", issuekey
+    for match in iterator:
+        issuekey = match.group(1)
         ret = hookfn(issuekey, jira_soap_client, jira_auth, jira_text)
         if ret != 0:
             return -1
