@@ -27,8 +27,6 @@
 # See accompanying README file for help in using this.
 # 
 
-
-
 import logging
 import sys
 import os
@@ -39,7 +37,6 @@ myname = os.path.basename(sys.argv[0])
 # as appropriate. 
 # loglevel=logging.INFO
 # loglevel=logging.DEBUG
-
 
 import subprocess
 import re
@@ -61,21 +58,20 @@ def main():
     global myname, loglevel
     logging.basicConfig(level=loglevel, format=myname + ":%(levelname)s: %(message)s")
 
-    if myname.startswith("commit-msg") :
+    if 'commit-msg' in myname :
         return handle_commit_msg()
 
-    elif myname.startswith("post-commit") :
+    elif 'post-commit' in myname :
         return handle_post_commit()
 
-    elif myname.startswith("update"):
+    elif 'update' in myname and 'post-update' not in myname:
         return handle_update()
 
-    elif myname.startswith("post-receive"):
+    elif 'post-receive' in myname:
         return handle_post_receive()
 
-
     else:
-        logging.error("invoked as '%s'. Need to be invoked as commit-msg*, post-commit*, update* or post-receive*" , myname)
+        logging.error("invoked as '%s'. Need to be invoked as *commit-msg*, *post-commit*, *update* or *post-receive*" , myname)
         return -1
  
 
